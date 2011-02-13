@@ -45,16 +45,6 @@ class FileUploader {
         return true;
     }
 
-    public function setUploadDirectory($path)
-    {
-        if (!is_dir($path) || !is_writable($path))
-        {
-            throw new Exception('Specified upload directory is not a directory or is not writable!');
-        }
-
-        $this->uploadDirectory = $path;
-    }
-
     public function count()
     {
         return count($this->files);
@@ -63,6 +53,16 @@ class FileUploader {
     public function files()
     {
         return $this->files;
+    }
+
+    public function setUploadDirectory($path)
+    {
+        if (!is_dir($path) || !is_writable($path))
+        {
+            throw new Exception('Specified upload directory is not a directory or is not writable!');
+        }
+
+        $this->uploadDirectory = $path;
     }
 
     public function setValidMIME($MIME = array())

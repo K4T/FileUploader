@@ -13,7 +13,15 @@ class FileUploader {
 
     public function upload($moveFiles = false)
     {
-        $this->parse();
+        try
+        {
+            $this->parse();
+        }
+        catch (Exception $e)
+        {
+            return $e->getMessage();
+        }
+
         $this->areFilesUploaded();
         $this->getFilesToUpload();
         $this->verifyMIME();
@@ -30,17 +38,20 @@ class FileUploader {
             throw new Exception('Upload directory is not specified!');
         }
 
-        foreach ($files as $file)
+        foreach ($this->files as $files)
         {
-            if (!isset($file['new_name']))
+            foreach ($files as $file)
             {
-                $file['new_name'] = $file['name'];
-            }
+                if (!isset($file['new_name']))
+                {
+                    $file['new_name'] = $file['name'];
+                }
 
-            //TODO: better error checking
-            if (is_uploaded_file($file['tmp_name']))
-            {
-                move_uploaded_file($file['tmp_name'], $this->uploadDirectory.$file['new_name']);
+                //TODO: better error checking
+                if (is_uploaded_file($file['tmp_name']))
+                {
+                    move_uploaded_file($file['tmp_name'], $this->uploadDirectory.$file['new_name']);
+                }
             }
         }
 
@@ -94,29 +105,51 @@ class FileUploader {
 
     private function parse()
     {
-        $keys = array_keys($_FILES);
+        $this->files = array();
 
-        foreach (array('name', 'type', 'tmp_name', 'error', 'size') as $field)
+        foreach(array_keys($_FILES) as $key)
         {
-            $i = 0;
-            foreach ($_FILES[$keys[0]][$field] as $value)
+            if (is_array($_FILES[$key]['name']))
             {
-                $this->files[$i][$field] = $value;
-                $i++;
+                //file input`s name parameter was an array
+                foreach (array('name', 'type', 'tmp_name', 'error', 'size') as $field)
+                {
+                    $i = 0;
+                    foreach ($_FILES[$key][$field] as $value)
+                    {
+                        $this->files[$key][$i][$field] = $value;
+                        $i++;
+                    }
+                }
             }
+            else
+            {
+                //file input`s name parameter was not an array
+                foreach ($_FILES[$key] as $key2 => $value)
+                {
+                    $this->files[$key][0][$key2] = $value;
+                }
+            }
+        }
+
+        if(empty($this->files))
+        {
+            Throw new Exception ('There is no files to upload!');
         }
     }
 
     private function areFilesUploaded()
     {
         $filesWithError = array();
-        $exceptionString = 'Upload failed: <br />';
 
-        foreach ($this->files as $file)
+        foreach ($this->files as $files)
         {
-            if ($file['error'] != UPLOAD_ERR_OK && $file['error'] != UPLOAD_ERR_NO_FILE)
+            foreach ($files as $file)
             {
-                $filesWithError[] = $file;
+                if ($file['error'] != UPLOAD_ERR_OK && $file['error'] != UPLOAD_ERR_NO_FILE)
+                {
+                    $filesWithError[] = $file;
+                }
             }
         }
 
@@ -124,10 +157,10 @@ class FileUploader {
         {
             foreach ($filesWithError as $file)
             {
-                $exceptionString .= 'File: '.$file['name'].' (error code: '.$file['error'].') <br />';
+                $this->addError('File: '.$file['name'].' (error code: '.$file['error'].')');
             }
 
-            Throw new Exception ($exceptionString);
+            Throw new Exception ('Not all files were uploaded correctly!');
         }
 
         return true;
@@ -135,17 +168,20 @@ class FileUploader {
 
     private function getFilesToUpload()
     {
-        $files = array();
+        $filesToUpload = array();
 
-        foreach ($this->files as $file)
+        foreach ($this->files as $key => $files)
         {
-            if ($file['error'] != UPLOAD_ERR_NO_FILE)
+            foreach ($files as $file)
             {
-                $files[] = $file;
+                if ($file['error'] != UPLOAD_ERR_NO_FILE)
+                {
+                    $filesToUpload[$key][] = $file;
+                }
             }
         }
 
-        $this->files = $files;
+        $this->files = $filesToUpload;
     }
 
     private function verifyMIME()
@@ -157,11 +193,14 @@ class FileUploader {
 
         $filesWithError = array();
 
-        foreach ($this->files as $file)
+        foreach ($this->files as $files)
         {
-            if (!in_array($file['type'], $this->validMIME))
+            foreach ($files as $file)
             {
-                $filesWithError[] = $file;
+                if (!in_array($file['type'], $this->validMIME))
+                {
+                    $filesWithError[] = $file;
+                }
             }
         }
 
@@ -185,11 +224,14 @@ class FileUploader {
 
         $filesWithError = array();
 
-        foreach ($this->files as $file)
+        foreach ($this->files as $files)
         {
-            if (!in_array($this->fileExtension($file['name']), $this->validExtensions))
+            foreach ($files as $file)
             {
-                $filesWithError[] = $file;
+                if (!in_array($this->fileExtension($file['name']), $this->validExtensions))
+                {
+                    $filesWithError[] = $file;
+                }
             }
         }
 
@@ -213,11 +255,14 @@ class FileUploader {
 
         $filesWithError = array();
 
-        foreach ($this->files as $file)
+        foreach ($this->files as $files)
         {
-            if ($file['size'] > $this->maxFileSize)
+            foreach ($files as $file)
             {
-                $filesWithError[] = $file;
+                if ($file['size'] > $this->maxFileSize)
+                {
+                    $filesWithError[] = $file;
+                }
             }
         }
 

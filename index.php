@@ -17,12 +17,9 @@
         $files = $fu->upload();
 
     /*
-        foreach ($this->files as $files)
+        foreach ($this->files as $file)
         {
-            foreach ($files as $file)
-            {
-                //do with file what you want :)
-            }
+            //do with file what do you want :)
         }
     */
 
@@ -36,9 +33,11 @@
 ?>
 
 <form method="post" action="" enctype="multipart/form-data">
-<p>Upload File: <input name="uploadOne" type="file" class="inputtext" /></p>
 <p>Upload File 1: <input name="upload[]" type="file" class="inputtext" /></p>
 <p>Upload File 2: <input name="upload[]" type="file" class="inputtext" /></p>
+<p>Upload File 3: <input name="upload[]" type="file" class="inputtext" /></p>
+<p>Upload File: <input name="uploadOne" type="file" class="inputtext" /></p>
 <p>Upload2 File 1: <input name="upload2[]" type="file" class="inputtext" /></p>
+<p>Upload2 File: <input name="uploadOne2" type="file" class="inputtext" /></p>
 <input type="submit" name="submit" value="Upload File" />
 </form

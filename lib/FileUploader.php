@@ -44,20 +44,17 @@ class FileUploader {
             throw new Exception('Upload directory is not specified!');
         }
 
-        foreach ($filesToMove as $files)
+        foreach ($filesToMove as $file)
         {
-            foreach ($files as $file)
+            if (!isset($file['new_name']))
             {
-                if (!isset($file['new_name']))
-                {
-                    $file['new_name'] = $file['name'];
-                }
+                $file['new_name'] = $file['name'];
+            }
 
-                //TODO: better error checking
-                if (is_uploaded_file($file['tmp_name']))
-                {
-                    move_uploaded_file($file['tmp_name'], $this->uploadDirectory.$file['new_name']);
-                }
+            //TODO: better error checking
+            if (is_uploaded_file($file['tmp_name']))
+            {
+                move_uploaded_file($file['tmp_name'], $this->uploadDirectory.$file['new_name']);
             }
         }
 
@@ -66,12 +63,12 @@ class FileUploader {
 
     public function count()
     {
-        return count($this->files);
+        return count($this->files());
     }
 
     public function files()
     {
-        return $this->files;
+        return (empty($this->files)) ? null : $this->files;
     }
 
     public function setUploadDirectory($path)
@@ -113,34 +110,40 @@ class FileUploader {
     {
         $this->files = array();
 
+        if ($this->isFILESArrayEmpty())
+        {
+            Throw new Exception ('There is no files to upload!');
+        }
+
         foreach(array_keys($_FILES) as $key)
         {
+            $i = $this->count();
+
             if (is_array($_FILES[$key]['name']))
             {
                 //file input`s name parameter was an array
                 foreach (array('name', 'type', 'tmp_name', 'error', 'size') as $field)
                 {
-                    $i = 0;
+                    $j = $i;
+
                     foreach ($_FILES[$key][$field] as $value)
                     {
-                        $this->files[$key][$i][$field] = $value;
-                        $i++;
+                        //TODO: move $this->files[$j]['input_name'] = $key; outside foreach
+                        $this->files[$j]['input_name'] = $key;
+                        $this->files[$j][$field] = $value;
+                        $j++;
                     }
                 }
             }
             else
             {
                 //file input`s name parameter was not an array
+                $this->files[$i]['input_name'] = $key;
                 foreach ($_FILES[$key] as $key2 => $value)
                 {
-                    $this->files[$key][0][$key2] = $value;
+                    $this->files[$i][$key2] = $value;
                 }
             }
-        }
-
-        if(empty($this->files))
-        {
-            Throw new Exception ('There is no files to upload!');
         }
     }
 
@@ -148,14 +151,11 @@ class FileUploader {
     {
         $filesWithError = array();
 
-        foreach ($this->files as $files)
+        foreach ($this->files() as $file)
         {
-            foreach ($files as $file)
+            if ($file['error'] != UPLOAD_ERR_OK && $file['error'] != UPLOAD_ERR_NO_FILE)
             {
-                if ($file['error'] != UPLOAD_ERR_OK && $file['error'] != UPLOAD_ERR_NO_FILE)
-                {
-                    $filesWithError[] = $file;
-                }
+                $filesWithError[] = $file;
             }
         }
 
@@ -176,14 +176,11 @@ class FileUploader {
     {
         $filesToUpload = array();
 
-        foreach ($this->files as $key => $files)
+        foreach ($this->files() as $file)
         {
-            foreach ($files as $file)
+            if ($file['error'] != UPLOAD_ERR_NO_FILE)
             {
-                if ($file['error'] != UPLOAD_ERR_NO_FILE)
-                {
-                    $filesToUpload[$key][] = $file;
-                }
+                $filesToUpload[] = $file;
             }
         }
 
@@ -199,14 +196,11 @@ class FileUploader {
 
         $filesWithError = array();
 
-        foreach ($this->files as $files)
+        foreach ($this->files() as $file)
         {
-            foreach ($files as $file)
+            if (!in_array($file['type'], $this->validMIME))
             {
-                if (!in_array($file['type'], $this->validMIME))
-                {
-                    $filesWithError[] = $file;
-                }
+                $filesWithError[] = $file;
             }
         }
 
@@ -230,14 +224,11 @@ class FileUploader {
 
         $filesWithError = array();
 
-        foreach ($this->files as $files)
+        foreach ($this->files() as $file)
         {
-            foreach ($files as $file)
+            if (!in_array($this->fileExtension($file['name']), $this->validExtensions))
             {
-                if (!in_array($this->fileExtension($file['name']), $this->validExtensions))
-                {
-                    $filesWithError[] = $file;
-                }
+                $filesWithError[] = $file;
             }
         }
 
@@ -261,14 +252,11 @@ class FileUploader {
 
         $filesWithError = array();
 
-        foreach ($this->files as $files)
+        foreach ($this->files() as $file)
         {
-            foreach ($files as $file)
+            if ($file['size'] > $this->maxFileSize)
             {
-                if ($file['size'] > $this->maxFileSize)
-                {
-                    $filesWithError[] = $file;
-                }
+                $filesWithError[] = $file;
             }
         }
 
@@ -281,6 +269,35 @@ class FileUploader {
 
             Throw new Exception ('Some of uploaded files are too big.');
         }
+    }
+
+    private function isFILESArrayEmpty()
+    {
+        foreach(array_keys($_FILES) as $key)
+        {
+            //file input`s name parameter was an array
+            if (is_array($_FILES[$key]['name']))
+            {
+                foreach($_FILES[$key]['name'] as $value)
+                {
+                    if (!empty($value))
+                    {
+                        //some file was sent
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                if (!empty($_FILES[$key]['name']))
+                {
+                    //some file was sent
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     private function addError($errorMessage)

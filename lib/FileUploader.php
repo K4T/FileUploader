@@ -158,7 +158,7 @@ class FileUploader {
         {
             foreach ($filesWithError as $file)
             {
-                $exceptionString .= 'File: '.$file['name'].' is not allowed to upload. <br />';
+                $exceptionString .= 'File: '.$file['name'].' is not allowed to upload (wrong MIME). <br />';
             }
 
             Throw new Exception ($exceptionString);

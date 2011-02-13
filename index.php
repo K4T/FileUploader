@@ -8,7 +8,7 @@
     {
         $fu->setUploadDirectory('upload/');
         $fu->setValidMIME(array('application/octet-stream', 'application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'));
-        $fu->setValidExtensions(array('zip', 'jpg', 'jpeg'));
+        $fu->setValidExtensions(array('Zip', 'jpg', 'jpeg'));
         $fu->setMaxFileSize(500000);
 
         $files = $fu->upload();

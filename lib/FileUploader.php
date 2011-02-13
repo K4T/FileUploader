@@ -67,12 +67,12 @@ class FileUploader {
 
     public function setValidMIME($MIME = array())
     {
-        $this->validMIME = $MIME;
+        $this->validMIME = array_map('strtolower', $MIME);
     }
 
     public function setValidExtensions($extensions = array())
     {
-        $this->validExtensions = $extensions;
+        $this->validExtensions = array_map('strtolower', $extensions);
     }
 
     public function setMaxFileSize($size)
@@ -225,7 +225,7 @@ class FileUploader {
 
     private function fileExtension($filename)
     {
-        $tmp = explode('.', $filename);
+        $tmp = explode('.', strtolower($filename));
         return end($tmp);
     }
 }

@@ -21,7 +21,7 @@
         {
             foreach ($files as $file)
             {
-                $files[$key]['new_name'] = $file['name'];
+                //do with file what you want :)
             }
         }
     */

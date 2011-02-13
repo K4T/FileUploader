@@ -19,7 +19,8 @@ class FileUploader {
         }
         catch (Exception $e)
         {
-            return $e->getMessage();
+            //no files to upload
+            return false;
         }
 
         $this->areFilesUploaded();
@@ -33,6 +34,11 @@ class FileUploader {
 
     public function moveUploadedFiles($files)
     {
+        if(!$this->files)
+        {
+            return false;
+        }
+
         if(!$this->uploadDirectory)
         {
             throw new Exception('Upload directory is not specified!');

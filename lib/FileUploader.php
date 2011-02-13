@@ -9,6 +9,8 @@ class FileUploader {
 
     private $files;
 
+    private $errorsList = array();
+
     public function upload($moveFiles = false)
     {
         $this->parse();
@@ -80,6 +82,16 @@ class FileUploader {
         $this->maxFileSize = $size;
     }
 
+    public function clearErrorsList()
+    {
+        $this->errorsList = array();
+    }
+
+    public function getErrors()
+    {
+        return $this->errorsList;
+    }
+
     private function parse()
     {
         $keys = array_keys($_FILES);
@@ -144,7 +156,6 @@ class FileUploader {
         }
 
         $filesWithError = array();
-        $exceptionString = 'Upload failed: <br />';
 
         foreach ($this->files as $file)
         {
@@ -158,10 +169,10 @@ class FileUploader {
         {
             foreach ($filesWithError as $file)
             {
-                $exceptionString .= 'File: '.$file['name'].' is not allowed to upload (wrong MIME). <br />';
+                $this->addError('File: '.$file['name'].' is not allowed to upload (wrong MIME type).');
             }
 
-            Throw new Exception ($exceptionString);
+            Throw new Exception ('Some of uploaded files have wrong MIME type!');
         }
     }
 
@@ -173,7 +184,6 @@ class FileUploader {
         }
 
         $filesWithError = array();
-        $exceptionString = 'Upload failed: <br />';
 
         foreach ($this->files as $file)
         {
@@ -187,10 +197,10 @@ class FileUploader {
         {
             foreach ($filesWithError as $file)
             {
-                $exceptionString .= 'File: '.$file['name'].' have got extension which is not allowed. <br />';
+                $this->addError('File: '.$file['name'].' have got extension which is not allowed.');
             }
 
-            Throw new Exception ($exceptionString);
+            Throw new Exception ('Some of uploaded files have wrong extension!');
         }
     }
 
@@ -202,7 +212,6 @@ class FileUploader {
         }
 
         $filesWithError = array();
-        $exceptionString = 'Upload failed: <br />';
 
         foreach ($this->files as $file)
         {
@@ -216,10 +225,18 @@ class FileUploader {
         {
             foreach ($filesWithError as $file)
             {
-                $exceptionString .= 'File: '.$file['name'].' is bigger than maximum allowed size: '.$this->maxFileSize.'b. <br />';
+                $this->addError('File: '.$file['name'].' is bigger than maximum allowed size: '.$this->maxFileSize.'b.');
             }
 
-            Throw new Exception ($exceptionString);
+            Throw new Exception ('Some of uploaded files are too big.');
+        }
+    }
+
+    private function addError($errorMessage)
+    {
+        if ($errorMessage != '')
+        {
+            $this->errorsList[] = array("message" => $errorMessage);
         }
     }
 

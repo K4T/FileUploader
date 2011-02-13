@@ -4,33 +4,34 @@
 
     $fu = new FileUploader();
 
-    try
-    {
-        $fu->setUploadDirectory('upload/');
-        $fu->setValidMIME(array('application/octet-stream',
-                                'application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip',
-                                'image/jpeg', 'image/pjpeg', 'image/jpeg', 'image/pjpeg'));
-        
-        $fu->setValidExtensions(array('zip', 'jpg', 'jpeg'));
-        $fu->setMaxFileSize(500000);
-
-        $files = $fu->upload();
-
-    /*
-        foreach ($files as $key => $file)
+	if (isset($_POST['submit']))
+	{
+        try
         {
-            $files[$key]['new_name'] = $file['name'];
+            $fu->setUploadDirectory('upload/');
+            $fu->setValidMIME(array('application/octet-stream',
+                                    'application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip',
+                                    'image/jpeg', 'image/pjpeg', 'image/jpeg', 'image/pjpeg'));
+
+            $fu->setValidExtensions(array('zip', 'jpg', 'jpeg'));
+            $fu->setMaxFileSize(500000);
+
+            $files = $fu->upload();
+
+        /*
+            foreach ($files as $key => $file)
+            {
+                $files[$key]['new_name'] = $file['name'];
+            }
+        */
+
+            $fu->moveUploadedFiles($files);
         }
-    */
-
-        $fu->moveUploadedFiles($files);
-    }
-    catch (Exception $e)
-    {
-        echo $e->getMessage();
-    }
-
-
+        catch (Exception $e)
+        {
+            echo $e->getMessage();
+        }
+}
 
 ?>
 

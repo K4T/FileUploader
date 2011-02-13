@@ -32,9 +32,9 @@ class FileUploader {
         return ($moveFiles) ? $this->moveUploadedFiles($this->files()) : $this->files();
     }
 
-    public function moveUploadedFiles($files)
+    public function moveUploadedFiles($filesToMove)
     {
-        if(!$this->files)
+        if(!$filesToMove)
         {
             return false;
         }
@@ -44,7 +44,7 @@ class FileUploader {
             throw new Exception('Upload directory is not specified!');
         }
 
-        foreach ($this->files as $files)
+        foreach ($filesToMove as $files)
         {
             foreach ($files as $file)
             {
